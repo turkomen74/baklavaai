@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="arWRr6xel-AOzGOFiqQJxSbAfCYYLkQshrRLp8R7Qa4" />
+    <title>Baklava AI - TURKOMEN</title>
+    <link class="rounded-lg" rel="icon" type="image/x-icon" href="icon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { border-radius: 20px; }
+        
+        /* Tema Değişkenleri ve Geçişleri */
+        .theme-dark { background-color: #000000; color: #f1f5f9; }
+        .theme-dark .bg-app-header { background-color: #000000; border-bottom: 1px solid #27272a; }
+        .theme-dark .bg-app-chat { background-color: #000000; }
+        .theme-dark .bg-app-input-container { background-color: #000000; border-top: 1px solid #18181b; }
+        .theme-dark .bg-app-input-box { background-color: #09090b; border: 1px solid #27272a; }
+        .theme-dark .text-app-main { color: #f1f5f9; }
+        .theme-dark .text-app-sub { color: #71717a; }
+        .theme-dark .bg-app-bubble-ai { background-color: #09090b; border: 1px solid #27272a; color: #e2e8f0; }
+        .theme-dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #27272a; }
+        .theme-dark .bg-app-header-display { background-color: rgba(39, 39, 42, 0.5); border: 1px solid #27272a; }
+        .theme-dark .bg-app-modal { background-color: #09090b; border: 1px solid #27272a; color: #f1f5f9; }
+        .theme-dark .input-app-field { background-color: #000000; border: 1px solid #27272a; color: #f1f5f9; }
+
+        .theme-light { background-color: #f8fafc; color: #0f172a; }
+        .theme-light .bg-app-header { background-color: #ffffff; border-bottom: 1px solid #e2e8f0; }
+        .theme-light .bg-app-chat { background-color: #f8fafc; }
+        .theme-light .bg-app-input-container { background-color: #ffffff; border-top: 1px solid #e2e8f0; }
+        .theme-light .bg-app-input-box { background-color: #f1f5f9; border: 1px solid #cbd5e1; }
+        .theme-light .text-app-main { color: #0f172a; }
+        .theme-light .text-app-sub { color: #64748b; }
+        .theme-light .bg-app-bubble-ai { background-color: #ffffff; border: 1px solid #e2e8f0; color: #334155; }
+        .theme-light .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; }
+        .theme-light .bg-app-header-display { background-color: rgba(241, 245, 249, 0.8); border: 1px solid #cbd5e1; }
+        .theme-light .bg-app-modal { background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; }
+        .theme-light .input-app-field { background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #0f172a; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .animate-scale-in { animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+        .loader { border: 2px solid #18181b; border-radius: 50%; border-top: 2px solid #f59e0b; width: 16px; height: 16px; animation: spin 1s linear infinite; }
+        .theme-light .loader { border: 2px solid #e2e8f0; border-top: 2px solid #f59e0b; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .code-block-wrapper {
+            position: relative; margin: 0.75rem 0; border-radius: 0.5rem;
+            overflow: hidden; border: 1px solid #27272a; background-color: #09090b; 
+        }
+        .theme-light .code-block-wrapper {
+            border: 1px solid #cbd5e1; background-color: #1e293b;
+        }
+        .code-block-header {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: #000000; padding: 0.5rem 1rem; color: #e2e8f0;
+            font-family: monospace; font-size: 0.75rem; border-bottom: 1px solid #27272a;
+        }
+        .theme-light .code-block-header {
+            background-color: #0f172a; border-bottom: 1px solid #334155;
+        }
+        .copy-btn {
+            background-color: #18181b; color: white; padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;
+            display: none; /* Initially hidden, shown after typing */
+        }
+        .copy-btn:hover {
+            background-color: #27272a;
+        }
+        .code-content {
+            padding: 1rem; overflow-x: auto; color: #f8fafc;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace; font-size: 0.875rem;
+            line-height: 1.5; white-space: pre;
+        }
+        
+        .typing-cursor::after {
+            content: '|'; animation: blink 1s step-start infinite;
+            color: #f59e0b; font-weight: bold; margin-left: 2px;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Mesaj Durduruldu Stili */
+        .status-aborted {
+            color: #ef4444; font-weight: bold; font-size: 0.8rem; margin-top: 8px;
+            display: flex; align-items: center; gap: 4px;
+        }
+    </style>
+</head>
+<body class="h-screen flex theme-dark">
+
+    <!-- Ana Uygulama (Sidebar kaldırıldı, flex-1 tüm ekranı kaplar) -->
+    <div id="main-app" class="flex-1 flex flex-col h-full relative transition-opacity duration-500 opacity-0 pointer-events-none">
+        <header class="h-16 bg-app-header flex items-center justify-between px-6 z-20 sticky top-0 transition-colors">
+            <div class="flex items-center gap-4">
+                <h2 class="text-xl font-bold text-app-main flex items-center gap-2 select-none">
+                    <!-- Gerçek Baklava Logosu (logo.png) -->
+                    <img src="logo.png" alt="Baklava AI Logo" class="w-8 h-8 object-contain" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/e/e0/Baklava_slice_with_pistachio_filling.png';">
+                    BAKLAVA AI
+                </h2>
+                <div class="hidden sm:flex items-center gap-2">
+                    <span id="api-status-indicator" class="text-[10px] px-2 py-0.5 rounded border"></span>
+                    <div id="api-display-box" class="flex items-center gap-1.5 bg-app-header-display px-2 py-0.5 rounded text-[10px] text-zinc-400">
+                        <span id="api-key-masked">gsk_***</span>
+                        <button onclick="toggleKeyVisibility()" class="hover:text-amber-500 transition-colors">
+                            <i id="eye-icon" data-lucide="eye" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TOOLTIP SİSTEMLİ BUTON PANELİ -->
+            <div class="flex items-center gap-1">
+                <!-- TURKOMEN YOUTUBE KANALI -->
+                <a href="https://www.youtube.com/@turkomen74" target="_blank" class="group relative p-2.5 text-zinc-500 hover:text-red-600 hover:bg-red-600/10 rounded-xl transition-all">
+                    <!-- YouTube Logosu (SVG) -->
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.52 3.5 12 3.5 12 3.5s-7.52 0-9.388.555A3.002 3.002 0 0 0 .502 6.163C0 8.03 0 12 0 12s0 3.97.502 5.837a3.003 3.003 0 0 0 2.11 2.108C4.48 20.5 12 20.5 12 20.5s7.52 0 9.388-.555a3.003 3.003 0 0 0 2.11-2.108C24 15.97 24 12 24 12s0-3.97-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    <span class="absolute top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-150 bg-zinc-900 border border-zinc-800 text-slate-200 text-[10px] font-medium py-1 px-2 rounded-md shadow-xl whitespace-nowrap z-50 pointer-events-none">TURKOMEN YOUTUBE KANALI</span>
+                </a>
+
+                <!-- TURKOMEN DISCORD SUNUCUSU -->
+                <a href="http://discord.com/invite/G5thucVR8Z" target="_blank" class="group relative p-2.5 text-zinc-500 hover:text-[#5865F2] hover:bg-[#5865F2]/10 rounded-xl transition-all">
+                    <!-- Discord Logosu (SVG) -->
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/>
+                    </svg>
+                    <span class="absolute top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-150 bg-zinc-900 border border-zinc-800 text-slate-200 text-[10px] font-medium py-1 px-2 rounded-md shadow-xl whitespace-nowrap z-50 pointer-events-none">TURKOMEN Sunucu</span>
+                </a>
+
+                <!-- SOHBET SIFIRLA BUTONU -->
+                <button onclick="clearChat()" class="group relative p-2.5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all">
+                    <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    <span class="absolute top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-150 bg-zinc-900 border border-zinc-800 text-slate-200 text-[10px] font-medium py-1 px-2 rounded-md shadow-xl whitespace-nowrap z-50 pointer-events-none">Sohbet'i Sıfırla</span>
+                </button>
+                
+                <!-- TURKOMEN IZLE BUTONU -->
+                <a href="https://turkomenizle.lovable.app/" target="_blank" class="group relative p-2.5 flex items-center justify-center rounded-xl transition-all hover:bg-red-500/10">
+                    <!-- Özel Video/Yayın Görsel Kamerası -->
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none">
+                        <rect width="24" height="24" rx="6" fill="#FF2D55"/>
+                        <path d="M6 8.5C6 7.67157 6.67157 7 7.5 7H14.5C15.3284 7 16 7.67157 16 8.5V15.5C16 16.3284 15.3284 17 14.5 17H7.5C6.67157 17 6 15.5V8.5Z" fill="white"/>
+                        <path d="M16 10.5L19.5 8V16L16 13.5V10.5Z" fill="white"/>
+                        <path d="M6 14.5C6.8 14.5 7 15.2 7.5 15.5C8 15.2 9 15.5 9.5 15.8 10 16.5 11 16.5 11.5 16.5 12 16 12 15.8C12 15.2 11 15 10 15C9 15 8.5 15.2 8 14.8C7.5 14.4 7.2 14 6.5 14C6.2 14 6 14.2 6 14.5Z" fill="#18181B"/>
+                    </svg>
+                    <span class="absolute top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-150 bg-zinc-900 border border-zinc-800 text-slate-200 text-[10px] font-medium py-1 px-2 rounded-md shadow-xl whitespace-nowrap z-50 pointer-events-none">TURKOMEN IZLE</span>
+                </a>
+                
+                <!-- TURKOMEN GAMES BUTONU (HEDEF: hesapmakinesi74) -->
+                <a href="https://turkomen74.github.io/hesapmakinesi74/" target="_blank" class="group relative p-2.5 text-zinc-500 hover:text-green-500 hover:bg-green-500/10 rounded-xl transition-all">
+                    <i data-lucide="gamepad-2" class="w-5 h-5"></i>
+                    <span class="absolute top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-150 bg-zinc-900 border border-zinc-800 text-slate-200 text-[10px] font-medium py-1 px-2 rounded-md shadow-xl whitespace-nowrap z-50 pointer-events-none">TURKOMEN GAMES</span>
+                </a>
+                
+                <!-- TURKOMEN FILES BUTONU -->
+                <a href="https://turkomenfiles.lovable.app/" target="_blank" class="group relative p-2.5 text-zinc-500 hover:text-blue-500 hover:bg-blue-500/10 rounded-xl transition-all">
+                    <i data-lucide="folder-open" class="w-5 h-5"></i>
+                    <span class="absolute top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-150 bg-zinc-900 border border-zinc-800 text-slate-200 text-[10px] font-medium py-1 px-2 rounded-md shadow-xl whitespace-nowrap z-50 pointer-events-none">TURKOMEN FILES</span>
+                </a>
+                
+                <!-- API KEY DEĞİŞTİR -->
+                <button onclick="clearApiKeyAndRefresh()" class="group relative p-2.5 text-zinc-500 hover:text-orange-500 hover:bg-orange-500/10 rounded-xl transition-all">
+                    <i data-lucide="key-round" class="w-5 h-5"></i>
+                    <span class="absolute top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-150 bg-zinc-900 border border-zinc-800 text-slate-200 text-[10px] font-medium py-1 px-2 rounded-md shadow-xl whitespace-nowrap z-50 pointer-events-none">Api Key'i Değiştir</span>
+                </button>
+
+                <!-- AYARLAR BUTONU -->
+                <button onclick="openSettingsModal()" class="group relative p-2.5 text-zinc-500 hover:text-amber-500 hover:bg-amber-500/10 rounded-xl transition-all">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span class="absolute top-12 left-1/2 -translate-x-1/2 scale-0 group-hover:scale-100 transition-all duration-150 bg-zinc-900 border border-zinc-800 text-slate-200 text-[10px] font-medium py-1 px-2 rounded-md shadow-xl whitespace-nowrap z-50 pointer-events-none">Ayarlar</span>
+                </button>
+            </div>
+        </header>
+
+        <main id="chat-area" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 custom-scrollbar bg-app-chat transition-colors">
+            <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center pb-20 animate-fade-in select-none">
+                <!-- Karşılama Ekranı Büyük Gerçek Baklava Logosu -->
+                <div class="w-28 h-28 mb-6 overflow-hidden shadow-2xl border-4 border-zinc-900 ring-2 ring-amber-500/20 rounded-2xl flex items-center justify-center bg-black">
+                    <img src="logo.png" alt="Baklava" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/e/e0/Baklava_slice_with_pistachio_filling.png';">
+                </div>
+                <h1 class="text-3xl font-bold text-app-main mb-1">BAKLAVA</h1>
+                <div class="flex flex-col items-center mb-6">
+                    <p class="text-sm font-semibold text-app-sub">TURKOMEN Tarafından Geliştirilen Bir Yapay Zeka Aracı</p>
+                    <span class="text-xs font-semibold text-white bg-amber-600 px-3 py-1 rounded-full mt-1">v3.0</span>
+                </div>
+            </div>
+        </main>
+
+        <div id="input-container" class="p-4 md:p-6 bg-app-input-container z-20 transition-colors">
+            <div class="max-w-4xl mx-auto">
+                <div class="relative flex items-end gap-3 bg-app-input-box p-2 rounded-3xl transition-all duration-300">
+                    <textarea id="user-input" rows="1" placeholder="Mesajınızı buraya yazın..." class="w-full bg-transparent border-none focus:ring-0 resize-none py-3.5 px-4 text-app-main outline-none" style="min-height: 52px;"></textarea>
+                    
+                    <!-- STOP BUTONU -->
+                    <button id="stop-btn" onclick="abortGeneration()" class="mb-1 p-3.5 text-red-500 hover:bg-red-500/10 rounded-2xl hidden" title="Durdur">
+                        <i data-lucide="square" class="w-5 h-5"></i>
+                    </button>
+                    
+                    <button onclick="handleSend()" id="send-btn" class="mb-1 p-3.5 bg-amber-600 hover:bg-amber-700 text-white rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-30">
+                        <i data-lucide="send" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Key Ekranı -->
+    <div id="api-key-screen" class="absolute inset-0 z-40 bg-black flex items-center justify-center p-8">
+        <div class="max-w-md w-full bg-zinc-950 p-8 rounded-2xl shadow-2xl text-center border border-zinc-800 animate-fade-in">
+            <i data-lucide="shield-check" class="w-10 h-10 text-amber-500 mx-auto mb-4"></i>
+            <h2 class="text-2xl font-bold text-slate-100 mb-2">Groq Erişimi</h2>
+            <p class="text-zinc-500 mb-6 text-sm">Devam etmek için API anahtarınızı girin.</p>
+            <input type="text" id="api-key-input" placeholder="gsk_..." class="w-full p-3 border border-zinc-800 bg-black text-slate-100 rounded-xl mb-6 focus:border-amber-600 outline-none">
+            
+            <button id="save-key-btn" onclick="saveApiKey()" class="w-full p-3 bg-amber-600 text-white font-semibold rounded-xl hover:bg-amber-700 transition-all flex items-center justify-center active:scale-95">
+                <span id="save-key-text">Doğrula ve Başla</span>
+            </button>
+            <p class="mt-4 text-sm text-zinc-500">Api Keyin Yok mu? <a href="https://console.groq.com/keys" target="_blank" class="text-amber-500 underline">Ücretsiz Oluştur!</a></p>
+        </div>
+    </div>
+
+    <!-- Status Modal -->
+    <div id="status-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl shadow-2xl max-w-xs w-full text-center animate-scale-in">
+            <div id="status-icon-container" class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"></div>
+            <h3 id="status-title" class="text-xl font-bold mb-2"></h3>
+            <p id="status-desc" class="text-zinc-400 text-sm mb-6"></p>
+            <button id="status-close-btn" onclick="closeStatusModal()" class="w-full py-3 rounded-xl font-bold transition-all"></button>
+        </div>
+    </div>
+
+    <!-- AYARLAR MODAL -->
+    <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-app-modal p-6 rounded-3xl shadow-2xl max-w-sm w-full animate-scale-in transition-colors">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-app-main flex items-center gap-2">
+                    <i data-lucide="settings" class="w-5 h-5 text-amber-500"></i>
+                    Uygulama Ayarları
+                </h3>
+                <button onclick="closeSettingsModal()" class="text-zinc-500 hover:text-app-main transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 mb-6">
+                <!-- Tema Bölümü -->
+                <div>
+                    <label class="text-sm font-semibold text-zinc-400 block mb-2">Arayüz Teması</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="setTheme('dark')" id="theme-btn-dark" class="flex items-center justify-center gap-2 p-3 rounded-xl border border-amber-600 bg-amber-600/10 text-amber-500 font-semibold transition-all">
+                            <i data-lucide="moon" class="w-4 h-4"></i>
+                            Koyu Tema
+                        </button>
+                        <button onclick="setTheme('light')" id="theme-btn-light" class="flex items-center justify-center gap-2 p-3 rounded-xl border border-zinc-800 bg-zinc-900/50 text-zinc-400 font-semibold transition-all">
+                            <i data-lucide="sun" class="w-4 h-4"></i>
+                            Açık Tema
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hitap Şekli Bölümü (Eymen yerine Alperen yapıldı) -->
+                <div>
+                    <label class="text-sm font-semibold text-zinc-400 block mb-2">Hitap Şekli (Yapay Zeka Size Nasıl Hitap Etsin?)</label>
+                    <input type="text" id="user-nickname-input" placeholder="Örn: Alperen, Hocam, Şefim..." class="input-app-field w-full p-3 rounded-xl focus:border-amber-600 outline-none transition-colors">
+                </div>
+            </div>
+
+            <button onclick="saveSettings()" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold transition-all">
+                Değişiklikleri Kaydet
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function safeCreateIcons() { if (typeof lucide !== 'undefined') lucide.createIcons(); }
+        
+        let globalApiKey = ""; 
+        let isTyping = false;
+        let chatHistory = []; 
+        let currentAbortController = null;
+        let isKeyVisible = false;
+
+        const chatArea = document.getElementById('chat-area');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const apiKeyScreen = document.getElementById('api-key-screen');
+        const mainApp = document.getElementById('main-app'); 
+        const statusModal = document.getElementById('status-modal');
+        const settingsModal = document.getElementById('settings-modal');
+
+        // Tema Yönetimi
+        function setTheme(theme) {
+            const body = document.body;
+            const darkBtn = document.getElementById('theme-btn-dark');
+            const lightBtn = document.getElementById('theme-btn-light');
+            
+            if (theme === 'light') {
+                body.className = "h-screen flex theme-light";
+                localStorage.setItem('baklavaTheme', 'light');
+                
+                // Buton Durumları
+                lightBtn.className = "flex items-center justify-center gap-2 p-3 rounded-xl border border-amber-600 bg-amber-600/10 text-amber-500 font-semibold transition-all";
+                darkBtn.className = "flex items-center justify-center gap-2 p-3 rounded-xl border-zinc-200 bg-white hover:bg-zinc-100 text-zinc-600 font-semibold transition-all";
+            } else {
+                body.className = "h-screen flex theme-dark";
+                localStorage.setItem('baklavaTheme', 'dark');
+                
+                // Buton Durumları
+                darkBtn.className = "flex items-center justify-center gap-2 p-3 rounded-xl border border-amber-600 bg-amber-600/10 text-amber-500 font-semibold transition-all";
+                lightBtn.className = "flex items-center justify-center gap-2 p-3 rounded-xl border-zinc-800 bg-zinc-900/50 text-zinc-400 font-semibold transition-all";
+            }
+            safeCreateIcons();
+        }
+
+        function loadSavedTheme() {
+            const savedTheme = localStorage.getItem('baklavaTheme') || 'dark';
+            setTheme(savedTheme);
+        }
+
+        // Ayarlar Sayfası İşlemleri
+        function openSettingsModal() {
+            // Kayıtlı hitap şeklini yükle
+            document.getElementById('user-nickname-input').value = localStorage.getItem('userNickname') || "";
+            settingsModal.classList.remove('opacity-0', 'pointer-events-none');
+            safeCreateIcons();
+        }
+
+        function closeSettingsModal() {
+            settingsModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // Ayarları Kaydetme Fonksiyonu
+        function saveSettings() {
+            const nicknameInput = document.getElementById('user-nickname-input').value.trim();
+            localStorage.setItem('userNickname', nicknameInput);
+            closeSettingsModal();
+        }
+
+        function checkApiKey() {
+            loadSavedTheme(); // Tema kontrolünü arayüz yüklenirken yapıyoruz
+            const storedKey = localStorage.getItem('groqApiKey');
+            if (storedKey) {
+                globalApiKey = storedKey;
+                apiKeyScreen.style.display = 'none';
+                mainApp.classList.remove('opacity-0', 'pointer-events-none');
+                mainApp.style.opacity = '1';
+                updateApiStatus(true);
+                updateMaskedKey();
+            } else {
+                apiKeyScreen.style.display = 'flex';
+                updateApiStatus(false);
+            }
+            safeCreateIcons();
+        }
+
+        function showStatus(type, title, desc) {
+            const iconCont = document.getElementById('status-icon-container');
+            const titleEl = document.getElementById('status-title');
+            const descEl = document.getElementById('status-desc');
+            const btn = document.getElementById('status-close-btn');
+            if (type === 'success') {
+                iconCont.className = "w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-500/10 text-green-500 border border-green-500/20";
+                iconCont.innerHTML = '<i data-lucide="check-circle-2" class="w-10 h-10"></i>';
+                btn.className = "w-full py-3 rounded-xl font-bold bg-green-600 hover:bg-green-700 text-white";
+                btn.textContent = "Başla";
+                btn.onclick = () => { closeStatusModal(); checkApiKey(); };
+            } else if (type === 'error') {
+                iconCont.className = "w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-red-500/10 text-red-500 border border-red-500/20";
+                iconCont.innerHTML = '<i data-lucide="x-circle" class="w-10 h-10"></i>';
+                btn.className = "w-full py-3 rounded-xl font-bold bg-zinc-800 hover:bg-zinc-700 text-white";
+                btn.textContent = "Tekrar Dene";
+                btn.onclick = closeStatusModal;
+            } else if (type === 'loading') {
+                iconCont.className = "w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-amber-500/10 text-amber-500 border border-amber-500/20";
+                iconCont.innerHTML = '<div class="loader !w-8 !h-8 !border-[4px]"></div>';
+                btn.className = "hidden";
+            }
+            titleEl.textContent = title;
+            descEl.textContent = desc;
+            statusModal.classList.remove('opacity-0', 'pointer-events-none');
+            safeCreateIcons();
+        }
+
+        function closeStatusModal() { statusModal.classList.add('opacity-0', 'pointer-events-none'); }
+
+        async function saveApiKey() {
+            const input = document.getElementById('api-key-input').value.trim();
+            if (!input.startsWith('gsk_')) { showStatus('error', 'Hatalı Format', 'Anahtar gsk_ ile başlamalı.'); return; }
+            showStatus('loading', 'Bağlanıyor', 'Kontrol ediliyor...');
+            try {
+                const res = await fetch("https://api.groq.com/openai/v1/models", { headers: { "Authorization": `Bearer ${input}` } });
+                if (!res.ok) throw new Error();
+                localStorage.setItem('groqApiKey', input);
+                globalApiKey = input;
+                setTimeout(() => showStatus('success', 'Hazır!', 'Anahtar onaylandı.'), 600);
+            } catch (e) {
+                setTimeout(() => showStatus('error', 'Geçersiz', 'Anahtar hatalı olabilir.'), 600);
+            }
+        }
+
+        function updateApiStatus(ok) {
+            const el = document.getElementById('api-status-indicator');
+            if(!el) return;
+            el.textContent = ok ? "BAKLAVA v3.0 AKTİF" : "API Bekleniyor";
+            el.className = ok ? 'text-[10px] px-2 py-0.5 rounded border border-green-900 text-green-500 bg-green-950/20' : 'text-[10px] px-2 py-0.5 rounded border border-zinc-800 text-zinc-500';
+        }
+
+        function updateMaskedKey() {
+            const el = document.getElementById('api-key-masked');
+            if(!el) return;
+            el.textContent = isKeyVisible ? globalApiKey : globalApiKey.substring(0, 7) + "..." + globalApiKey.substring(globalApiKey.length - 4);
+        }
+
+        function toggleKeyVisibility() {
+            isKeyVisible = !isKeyVisible;
+            document.getElementById('eye-icon').setAttribute('data-lucide', isKeyVisible ? 'eye-off' : 'eye');
+            safeCreateIcons();
+            updateMaskedKey();
+        }
+
+        function clearApiKeyAndRefresh() { localStorage.removeItem('groqApiKey'); window.location.reload(); }
+        
+        function clearChat() {
+            window.location.reload();
+        }
+
+        function abortGeneration() { 
+            if (currentAbortController) { 
+                currentAbortController.abort(); 
+                isTyping = false; 
+                sendBtn.classList.remove('hidden'); 
+                stopBtn.classList.add('hidden');
+                
+                const lastMsg = chatArea.lastElementChild;
+                if (lastMsg && lastMsg.querySelector('.typing-cursor')) {
+                    const typingEl = lastMsg.querySelector('.typing-cursor');
+                    typingEl.classList.remove('typing-cursor');
+                    const abortMarker = document.createElement('div');
+                    abortMarker.className = 'status-aborted';
+                    abortMarker.innerHTML = '<i data-lucide="circle-off" class="w-3 h-3"></i> Mesaj Durduruldu.';
+                    typingEl.appendChild(abortMarker);
+                    
+                    const rawText = typingEl.dataset.rawText || "";
+                    typingEl.innerHTML = formatMessageText(rawText, true);
+                    typingEl.appendChild(abortMarker);
+                }
+                
+                if (chatHistory.length > 0) {
+                    const lastItem = chatHistory[chatHistory.length - 1];
+                    if (lastItem.role === 'assistant') {
+                        chatHistory.pop();
+                    }
+                    if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
+                        chatHistory.pop();
+                    }
+                }
+                safeCreateIcons();
+            } 
+        }
+
+        function formatMessageText(text, showCopy = false) {
+            let formatted = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            formatted = formatted.replace(/\*\*(.*?)\*\"/g, '<strong>$1</strong>');
+            
+            let parsedText = formatted;
+            let openMatches = (parsedText.match(/```/g) || []).length;
+            if (openMatches % 2 !== 0) {
+                parsedText += "\n```"; 
+            }
+
+            let codeBlocks = [];
+            parsedText = parsedText.replace(/```(\w*)[ \t]*\n?([\s\S]*?)```/g, (match, lang, code) => {
+                let rawCode = code.endsWith('\n') ? code.slice(0, -1) : code;
+                codeBlocks.push({ lang: lang || 'KOD', code: rawCode });
+                return `___CODE_BLOCK_${codeBlocks.length - 1}___`;
+            });
+
+            parsedText = parsedText.replace(/\n/g, '<br>');
+            parsedText = parsedText.replace(/___CODE_BLOCK_(\d+)___/g, (match, index) => {
+                const block = codeBlocks[index];
+                const copyStyle = showCopy ? 'display: block;' : 'display: none;';
+                return `<div class="code-block-wrapper"><div class="code-block-header"><span class="text-amber-500 font-bold">${block.lang.toUpperCase()}</span><button class="copy-btn" style="${copyStyle}" onclick="copyCode(this)">Kopyala</button></div><pre class="code-content">${block.code}</pre></div>`;
+            });
+            return parsedText;
+        }
+
+        window.copyCode = function(button) {
+            const codeText = button.closest('.code-block-wrapper').querySelector('pre').textContent;
+            const textArea = document.createElement("textarea");
+            textArea.value = codeText; document.body.appendChild(textArea); textArea.select();
+            document.execCommand('copy'); document.body.removeChild(textArea);
+            button.textContent = "Tamam!";
+            setTimeout(() => button.textContent = "Kopyala", 2000);
+        };
+
+        function addMessage(text, isUser) { 
+            welcomeScreen.style.display = 'none';
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex w-full ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in gap-3`;
+            const contentDiv = document.createElement('div');
+            contentDiv.className = `max-w-[85%] p-4 rounded-2xl ${isUser ? 'bg-amber-600 text-white ml-auto shadow-lg' : 'bg-app-bubble-ai'}`;
+            
+            const innerMsg = document.createElement('div');
+            if (!isUser && text === null) {
+                innerMsg.className = 'flex items-center gap-2';
+                innerMsg.innerHTML = '<div class="loader"></div> <span class="text-xs text-zinc-500 italic">Zekice Düşünüyor...</span>';
+            } else if (!isUser) {
+                innerMsg.className = 'typing-cursor';
+                innerMsg.innerHTML = formatMessageText(text || '', false); 
+            } else {
+                innerMsg.innerHTML = formatMessageText(text, true); 
+            }
+            contentDiv.appendChild(innerMsg); msgDiv.appendChild(contentDiv); chatArea.appendChild(msgDiv);
+            scrollToBottom(); return innerMsg;
+        }
+
+        async function typeWriter(text, element) {
+            element.innerHTML = '';
+            let currentText = '';
+            const chars = Array.from(text);
+            for (let i = 0; i < chars.length; i++) {
+                if (!isTyping) break; 
+                currentText += chars[i];
+                element.dataset.rawText = currentText;
+                element.innerHTML = formatMessageText(currentText, false); 
+                if (i % 8 === 0) scrollToBottom();
+                await new Promise(r => setTimeout(r, 8));
+            }
+            if (isTyping) {
+                element.innerHTML = formatMessageText(text, true); 
+                element.classList.remove('typing-cursor');
+            }
+        }
+
+        function scrollToBottom() { chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); }
+
+        async function handleSend() {
+            const text = userInput.value.trim();
+            if (!text || isTyping) return;
+            isTyping = true;
+            sendBtn.classList.add('hidden');
+            stopBtn.classList.remove('hidden');
+            
+            addMessage(text, true);
+            chatHistory.push({ role: "user", content: text });
+            userInput.value = '';
+            
+            const aiWrapper = addMessage(null, false);
+            currentAbortController = new AbortController();
+            
+            try {
+                const url = "https://api.groq.com/openai/v1/chat/completions";
+                
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+
+                // Hitap Şekli Kural Tanımlaması
+                const savedNickname = localStorage.getItem('userNickname') || "";
+                const nicknamePromptRule = savedNickname 
+                    ? `Kullanıcının ismi/sana hitap etmeni istediği şekil: "${savedNickname}". Kullanıcıya konuşurken mutlaka ve doğrudan bu hitap şekliyle ("${savedNickname}") hitap etmeli, ismini cümlelerinde çok doğal, sıcak ve samimi bir şekilde kullanmalısın.`
+                    : "Kullanıcıya genel, samimi ve saygılı bir dilde hitap et.";
+
+                // GELİŞTİRİLMİŞ SİSTEM PROMPTU (Geliştirici TURKOMEN'in Yetenekleri ve Hitap Şekli Detaylı Tanıtıldı)
+                const systemPrompt = {
+                    role: "system",
+                    content: `Sen BAKLAVA AI'sın. Seni geliştiren, kuran ve tasarlayan kişi tek başına "TURKOMEN"dir. "TURKOMEN" biricik ve özel bir geliştirici adıdır (developer nickname). "TURKOMEN" kelimesi asla ve hiçbir koşulda "Türkmenistan" ülkesiyle, "Türkmen" halkıyla ya da "Turkmen" etnik kimliğiyle karıştırılmamalı, bağdaştırılmamalı ve bu şekilde tanımlanmamalıdır. "Seni kim yaptı?", "TURKOMEN kimdir?" ya da benzeri her türlü geliştirici odaklı soruda kesinlikle Türkmenistan devletiyle veya Türkmen ulusuyla ilgili coğrafi/etnik açıklamalar yapmayacaksın. 
+                    TURKOMEN hakkında bilgi verirken şunları kesin ve net olarak söyleyeceksin: "Geliştiricim TURKOMEN, 3D fan yapımı Poppy Playtime oyunları geliştiren, aynı zamanda profesyonel web siteleri tasarlayan ve kodlayan son derece yetenekli bir bağımsız geliştiricidir." 
+                    Yazılım geliştirme, algoritma kurma ve teknik konularda dünya standartlarında bir uzmansın. C++, Python, C, C#, Java dillerinde asla hata yapmazsın. Kodların her zaman temiz (clean code), optimize ve profesyoneldir. Kısa, öz ama son derece zekice yanıtlar verirsin. Sorulan sorulardan sapmazsın. Kullanıcının cihazındaki güncel yerel tarih: ${dateStr}, güncel yerel saat: ${timeStr}.
+                    ${nicknamePromptRule}`
+                };
+
+                const response = await fetch(url, {
+                    method: "POST",
+                    signal: currentAbortController.signal,
+                    headers: { 
+                        "Authorization": `Bearer ${globalApiKey}`, 
+                        "Content-Type": "application/json" 
+                    },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [systemPrompt, ...chatHistory],
+                        temperature: 0.3, 
+                        max_tokens: 4096,
+                        top_p: 1
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `Bağlantı Hatası`);
+                }
+                
+                const data = await response.json();
+                const aiText = data.choices[0].message.content;
+                aiWrapper.innerHTML = '';
+                aiWrapper.className = 'typing-cursor';
+                await typeWriter(aiText, aiWrapper);
+                
+                if (isTyping) {
+                    chatHistory.push({ role: "assistant", content: aiText });
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    aiWrapper.innerHTML = `<div class="p-3 bg-red-900/20 border border-red-500/50 rounded-lg text-red-200 text-sm">Hata: ${error.message}</div>`;
+                    
+                    if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
+                        chatHistory.pop();
+                    }
+                }
+            } finally {
+                isTyping = false; 
+                sendBtn.classList.remove('hidden'); 
+                stopBtn.classList.add('hidden');
+                scrollToBottom(); 
+                safeCreateIcons();
+            }
+        }
+
+        userInput.addEventListener('keydown', (e) => { 
+            if (e.key === 'Enter' && !e.shiftKey) { 
+                e.preventDefault(); 
+                handleSend(); 
+            } 
+        });
+        window.onload = checkApiKey;
+    </script>
+</body>
+</html>
