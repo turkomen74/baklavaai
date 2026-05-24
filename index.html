@@ -479,14 +479,8 @@
             } 
         }
 
-        // HTML VE MARKDOWN ÖĞELERİNİ AYRIŞTIRIP FORMATLAYAN GELİŞMİŞ FONKSİYON
         function formatMessageText(text, showCopy = false) {
-            if (!text) return "";
-            
-            // HTML karakterlerini güvenli hale getirelim (ancak emojilere dokunmayalım)
             let formatted = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            
-            // Kalın yazı formatlaması (**yazı**)
             formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             
             let parsedText = formatted;
@@ -541,22 +535,17 @@
             scrollToBottom(); return innerMsg;
         }
 
-        // EMOJİ VE UTF-16 KARAKTERLERİNİ DÜZGÜN YAZDIRAN GELİŞMİŞ TYPEWRITER
         async function typeWriter(text, element) {
             element.innerHTML = '';
             let currentText = '';
-            
-            // Normal string char atlama yerine Array.from kullanarak emojileri (surrogate pairs) tek bir karakter olarak alırız!
             const chars = Array.from(text);
             for (let i = 0; i < chars.length; i++) {
                 if (!isTyping) break; 
                 currentText += chars[i];
                 element.dataset.rawText = currentText;
-                
-                // Canlı yazdırırken de formatı koruyoruz
                 element.innerHTML = formatMessageText(currentText, false); 
-                if (i % 6 === 0) scrollToBottom();
-                await new Promise(r => setTimeout(r, 6)); // Yazma hızını hafifçe optimize ettim (8ms -> 6ms)
+                if (i % 8 === 0) scrollToBottom();
+                await new Promise(r => setTimeout(r, 8));
             }
             if (isTyping) {
                 element.innerHTML = formatMessageText(text, true); 
@@ -594,7 +583,7 @@
                 // Özel Talimatlar Tanımlaması
                 const customInstructions = localStorage.getItem('customInstructions') || "";
                 const customInstructionsPrompt = customInstructions 
-                    ? `Kullanıcının senden kesinlikle uymanı istediği Özel Talimatlar şunlardır: "${customInstructions}". Bu özel talimatlara kelimesi kelimesine, her koşulda uyacaksın!`
+                    ? `Kullanıcının senden uymanı istediği Özel Talimatlar şunlardır, bu kurallara kesinlikle uyacaksın: "${customInstructions}"`
                     : "";
 
                 // GELİŞTİRİLMİŞ SİSTEM PROMPTU (Geliştirici TURKOMEN'in Yetenekleri, Hitap Şekli, Özel Talimatlar ve Harika Şaka Dinamikleri Tanıtıldı)
@@ -642,7 +631,7 @@
                     body: JSON.stringify({
                         model: "llama-3.3-70b-versatile",
                         messages: [systemPrompt, ...formattedMessages],
-                        temperature: 0.7, // Mizah ve esneklik kalitesini arttırmak için sıcaklığı 0.7 yaptık.
+                        temperature: 0.7, // Mizah ve esneklik kalitesini arttırmak için sıcaklığı 0.3'ten 0.7'ye yükselttim.
                         max_tokens: 4096,
                         top_p: 1
                     })
